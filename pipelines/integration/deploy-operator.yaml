@@ -131,6 +131,28 @@ spec:
                 value: "$(tasks.provision-cluster.results.clusterName)"
               - name: credentials
                 value: credentials
+          - name: show-creds-for-debugging
+            image: registry.redhat.io/openshift4/ose-cli@sha256:15da03b04318bcc842060b71e9dd6d6c2595edb4e8fdd11b0c6781eeb03ca182
+            env:
+              - name: KUBECONFIG
+                value: "/credentials/$(steps.get-kubeconfig.results.kubeconfig)"
+              - name: CLUSTER_USERNAME
+                value: "/credentials/$(steps.get-kubeconfig.results.username)"
+              - name: CLUSTER_PASSWORD
+                value: "/credentials/$(steps.get-kubeconfig.results.passwordPath)"
+              - name: CLUSTER_API_SERVER_URL
+                value: "/credentials/$(steps.get-kubeconfig.results.apiServerURL)"
+            volumeMounts:
+              - name: credentials
+                mountPath: /credentials
+            script: |
+              set -eo pipefail
+
+              cat $KUBECONFIG
+              echo "Cluster username: ${CLUSTER_USERNAME}"
+              echo "Cluster password path: ${CLUSTER_PASSWORD}"
+              echo "Cluster API Server URL: ${CLUSTER_API_SERVER_URL}"
+              cat ${CLUSTER_PASSWORD}
           - name: operator-sdk-run-bundle
             image: quay.io/operator-framework/operator-sdk:latest
             env:
